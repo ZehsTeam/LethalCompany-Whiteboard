@@ -3,7 +3,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 
-namespace com.github.zehsteam.Whiteboard;
+namespace com.github.zehsteam.Whiteboard.Objects;
 
 [CreateAssetMenu(menuName = "Whiteboard/SpriteSheetData")]
 public class SpriteSheetData : ScriptableObject

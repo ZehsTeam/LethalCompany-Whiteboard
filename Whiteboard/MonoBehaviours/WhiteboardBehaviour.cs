@@ -1,4 +1,7 @@
-﻿using GameNetcodeStuff;
+﻿using com.github.zehsteam.Whiteboard.Helpers;
+using com.github.zehsteam.Whiteboard.Managers;
+using com.github.zehsteam.Whiteboard.Objects;
+using GameNetcodeStuff;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -36,18 +39,13 @@ public class WhiteboardBehaviour : NetworkBehaviour
             WhiteboardText.spriteAsset = EmotesSpriteSheetData.SpriteAsset;
         }
 
-        if (PlayerUtils.IsLocalPlayerSpawned())
-        {
-            SetWorldCanvasCamera();
-        }
-
-        if (Plugin.IsHostOrServer)
+        if (NetworkUtils.IsServer)
         {
             LoadData();
         }
         else
         {
-            RequestDataServerRpc(NetworkUtils.GetLocalClientId());
+            RequestDataServerRpc();
         }
     }
 
@@ -55,9 +53,9 @@ public class WhiteboardBehaviour : NetworkBehaviour
     {
         IsHostOnly.OnValueChanged += OnIsHostOnlyChanged;
 
-        if (Plugin.IsHostOrServer)
+        if (NetworkUtils.IsServer)
         {
-            IsHostOnly.Value = Plugin.ConfigManager.HostOnly.Value;
+            IsHostOnly.Value = ConfigManager.Whiteboard_HostOnlyEdit.Value;
         }
         else if (IsHostOnly.Value)
         {
@@ -79,7 +77,7 @@ public class WhiteboardBehaviour : NetworkBehaviour
 
     private void OnIsHostOnlyChanged(bool previous, bool current)
     {
-        if (Plugin.IsHostOrServer) return;
+        if (NetworkUtils.IsServer) return;
 
         InteractTrigger.interactable = !current;
     }
@@ -88,7 +86,7 @@ public class WhiteboardBehaviour : NetworkBehaviour
     {
         if (WhiteboardEditorBehaviour.Instance == null)
         {
-            Plugin.logger.LogError("Failed to open whiteboard editor window. WhiteboardEditorBehaviour instance was not found.");
+            Logger.LogError("Failed to open whiteboard editor window. WhiteboardEditorBehaviour instance was not found.");
             return;
         }
 
@@ -97,24 +95,22 @@ public class WhiteboardBehaviour : NetworkBehaviour
 
     public void SetWorldCanvasCamera()
     {
-        PlayerControllerB playerScript = PlayerUtils.GetLocalPlayerScript();
-
-        if (playerScript == null)
+        if (!PlayerUtils.TryGetLocalPlayerScript(out PlayerControllerB playerScript))
         {
-            Plugin.logger.LogWarning("Failed to set whiteboard world canvas camera. Could not find the local player script or the local player is not spawned yet.");
+            Logger.LogWarning("Failed to set whiteboard world canvas camera. Could not find the local player script or the local player is not spawned yet.");
             return;
         }
         
         WorldCanvas.worldCamera = playerScript.gameplayCamera;
 
-        Plugin.Instance.LogInfoExtended("Set whiteboard world canvas camera.");
+        Logger.LogInfo("Set whiteboard world canvas camera.", extended: true);
     }
 
     private void LoadData()
     {
-        if (!Plugin.IsHostOrServer) return;
+        if (!NetworkUtils.IsServer) return;
 
-        string displayText = Utils.LoadFromCurrentSaveFile("Whiteboard_DisplayText", defaultValue: Plugin.ConfigManager.DefaultDisplayText.Value);
+        string displayText = Utils.LoadFromCurrentSaveFile("Whiteboard_DisplayText", defaultValue: ConfigManager.Whiteboard_DefaultDisplayText.Value);
         string textHexColor = Utils.LoadFromCurrentSaveFile("Whiteboard_TextHexColor", defaultValue: WhiteboardEditorBehaviour.DefaultTextHexColor);
         int fontSizeIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_FontSizeIndex", defaultValue: WhiteboardEditorBehaviour.DefaultFontSizeIndex);
         int fontStyleIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_FontStyleIndex", defaultValue: 0);
@@ -127,7 +123,7 @@ public class WhiteboardBehaviour : NetworkBehaviour
 
     private void SaveData()
     {
-        if (!Plugin.IsHostOrServer) return;
+        if (!NetworkUtils.IsServer) return;
 
         Utils.SaveToCurrentSaveFile("Whiteboard_DisplayText", Data.DisplayText);
         Utils.SaveToCurrentSaveFile("Whiteboard_TextHexColor", Data.TextHexColor);
@@ -140,27 +136,27 @@ public class WhiteboardBehaviour : NetworkBehaviour
 
     public void SetData(WhiteboardData data)
     {
-        SetDataServerRpc(data, NetworkUtils.GetLocalClientId());
+        SetDataServerRpc(data, NetworkUtils.LocalClientId);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void SetDataServerRpc(WhiteboardData data, int fromClientId)
+    public void SetDataServerRpc(WhiteboardData data, ulong senderClientId)
     {
-        if (fromClientId == NetworkUtils.GetLocalClientId())
+        if (NetworkUtils.IsLocalClientId(senderClientId))
         {
             // Host
-            Plugin.Instance.LogInfoExtended($"Set the whiteboard data. Display text: \"{data.DisplayText}\".");
+            Logger.LogInfo($"Set the whiteboard data. Display text: \"{data.DisplayText}\"", extended: true);
         }
         else
         {
             // Client
-            if (Plugin.ConfigManager.HostOnly.Value)
+            if (ConfigManager.Whiteboard_HostOnlyEdit.Value)
             {
-                Plugin.logger.LogWarning($"Client #{fromClientId} tried to edit the whiteboard while HostOnly mode is enabled.");
+                Logger.LogWarning($"Client #{senderClientId} tried to edit the whiteboard while HostOnly mode is enabled.");
                 return;
             }
 
-            Plugin.Instance.LogInfoExtended($"Client #{fromClientId} set the whiteboard data. Display text: \"{data.DisplayText}\".");
+            Logger.LogInfo($"Client #{senderClientId} set the whiteboard data. Display text: \"{data.DisplayText}\".", extended: true);
         }
 
         SetDataClientRpc(data);
@@ -170,21 +166,23 @@ public class WhiteboardBehaviour : NetworkBehaviour
     [ClientRpc]
     private void SetDataClientRpc(WhiteboardData data)
     {
-        if (Plugin.IsHostOrServer) return;
+        if (NetworkUtils.IsServer) return;
 
         SetDataOnLocalClient(data);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void RequestDataServerRpc(int toClientId)
+    public void RequestDataServerRpc(ServerRpcParams serverRpcParams = default)
     {
-        Plugin.Instance.LogInfoExtended($"Recieved request for whiteboard data from client #{toClientId}");
+        var senderClientId = serverRpcParams.Receive.SenderClientId;
+
+        Logger.LogInfo($"Recieved request for whiteboard data from client #{senderClientId}", extended: true);
 
         ClientRpcParams clientRpcParams = new ClientRpcParams
         {
             Send = new ClientRpcSendParams
             {
-                TargetClientIds = [(ulong)toClientId]
+                TargetClientIds = [senderClientId]
             }
         };
 
@@ -194,7 +192,7 @@ public class WhiteboardBehaviour : NetworkBehaviour
     [ClientRpc]
     private void RequestDataClientRpc(WhiteboardData data, ClientRpcParams clientRpcParams = default)
     {
-        Plugin.Instance.LogInfoExtended("Recieved whiteboard data.");
+        Logger.LogInfo("Recieved whiteboard data.", extended: true);
 
         SetDataOnLocalClient(data);
     }
@@ -217,7 +215,7 @@ public class WhiteboardBehaviour : NetworkBehaviour
     {
         if (Data == null)
         {
-            Plugin.logger.LogWarning("WhiteboardData is null in WhiteboardBehaviour.UpdateWhiteboardText(); Setting WhiteboardData to default.");
+            Logger.LogWarning("WhiteboardData is null in WhiteboardBehaviour.UpdateWhiteboardText(); Setting WhiteboardData to default.");
 
             Data = new WhiteboardData();
         }
@@ -279,6 +277,6 @@ public class WhiteboardBehaviour : NetworkBehaviour
         message += $"HorizontalAlignmentIndex: {Data.HorizontalAlignmentIndex}\n";
         message += $"VerticalAlignmentIndex: {Data.VerticalAlignmentIndex}\n";
 
-        Plugin.Instance.LogInfoExtended($"\n{message.Trim()}\n\n");
+        Logger.LogInfo($"\n{message.Trim()}\n\n", extended: true);
     }
 }

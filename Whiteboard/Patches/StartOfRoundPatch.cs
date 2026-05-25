@@ -1,4 +1,6 @@
-﻿using com.github.zehsteam.Whiteboard.MonoBehaviours;
+﻿using com.github.zehsteam.Whiteboard.Helpers;
+using com.github.zehsteam.Whiteboard.Managers;
+using com.github.zehsteam.Whiteboard.MonoBehaviours;
 using GameNetcodeStuff;
 using HarmonyLib;
 using Unity.Netcode;
@@ -18,9 +20,9 @@ internal class StartOfRoundPatch
 
     private static void SpawnNetworkHandler()
     {
-        if (!Plugin.IsHostOrServer) return;
+        if (!NetworkUtils.IsServer) return;
 
-        var networkHandlerHost = Object.Instantiate(Content.NetworkHandlerPrefab, Vector3.zero, Quaternion.identity);
+        var networkHandlerHost = Object.Instantiate(Assets.PluginNetworkHandlerPrefab, Vector3.zero, Quaternion.identity);
         networkHandlerHost.GetComponent<NetworkObject>().Spawn();
     }
 
@@ -36,20 +38,21 @@ internal class StartOfRoundPatch
             }
         };
 
-        PluginNetworkBehaviour.Instance.SetWhiteboardUnlockablePriceClientRpc(Plugin.ConfigManager.Price.Value, clientRpcParams);
+        PluginNetworkBehaviour.Instance.SetWhiteboardUnlockablePriceClientRpc(ConfigManager.Whiteboard_Price.Value, clientRpcParams);
     }
 
     [HarmonyPatch(nameof(StartOfRound.ReviveDeadPlayers))]
     [HarmonyPostfix]
     private static void ReviveDeadPlayersPatch()
     {
-        if (WhiteboardEditorBehaviour.Instance == null) return;
+        if (WhiteboardEditorBehaviour.Instance == null)
+            return;
 
-        if (WhiteboardEditorBehaviour.Instance.IsWindowOpen)
+        if (!WhiteboardEditorBehaviour.Instance.IsWindowOpen)
+            return;
+
+        if (PlayerUtils.TryGetLocalPlayerScript(out PlayerControllerB playerScript))
         {
-            PlayerControllerB playerScript = PlayerUtils.GetLocalPlayerScript();
-            if (playerScript == null) return;
-
             playerScript.disableMoveInput = true;
         }
     }

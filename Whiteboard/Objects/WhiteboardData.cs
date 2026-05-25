@@ -1,8 +1,9 @@
-﻿using com.github.zehsteam.Whiteboard.MonoBehaviours;
+﻿using com.github.zehsteam.Whiteboard.Managers;
+using com.github.zehsteam.Whiteboard.MonoBehaviours;
 using System;
 using Unity.Netcode;
 
-namespace com.github.zehsteam.Whiteboard;
+namespace com.github.zehsteam.Whiteboard.Objects;
 
 [Serializable]
 public class WhiteboardData : INetworkSerializable
@@ -17,12 +18,7 @@ public class WhiteboardData : INetworkSerializable
 
     public WhiteboardData()
     {
-        try
-        {
-            DisplayText = Plugin.ConfigManager.DefaultDisplayText.Value;
-        }
-        catch { }
-
+        DisplayText = ConfigManager.Whiteboard_DefaultDisplayText?.Value;
         TextHexColor = WhiteboardEditorBehaviour.DefaultTextHexColor;
         FontSizeIndex = WhiteboardEditorBehaviour.DefaultFontSizeIndex;
     }

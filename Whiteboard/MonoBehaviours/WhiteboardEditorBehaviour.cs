@@ -1,4 +1,7 @@
-﻿using TMPro;
+﻿using com.github.zehsteam.Whiteboard.Helpers;
+using com.github.zehsteam.Whiteboard.Managers;
+using com.github.zehsteam.Whiteboard.Objects;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -44,15 +47,15 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
     {
         if (WhiteboardBehaviour.Instance == null)
         {
-            Plugin.logger.LogError("Failed to open whiteboard editor window. Whiteboard instance was not found.");
+            Logger.LogError("Failed to open whiteboard editor window. Whiteboard instance was not found.");
             return;
         }
 
         if (Utils.IsQuickMenuOpen() || IsWindowOpen) return;
 
-        HostOnlyObject.SetActive(Plugin.IsHostOrServer);
+        HostOnlyObject.SetActive(NetworkUtils.IsServer);
 
-        if (Plugin.IsHostOrServer)
+        if (NetworkUtils.IsServer)
         {
             UpdateHostOnlyCheckbox();
         }
@@ -81,7 +84,7 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
     {
         if (WhiteboardBehaviour.Instance == null)
         {
-            Plugin.logger.LogError("Failed to confirm whiteboard changes. Whiteboard instance was not found.");
+            Logger.LogError("Failed to confirm whiteboard changes. Whiteboard instance was not found.");
             return;
         }
 
@@ -102,9 +105,9 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
 
     public void OnHostOnlyButtonClicked()
     {
-        if (!Plugin.IsHostOrServer) return;
+        if (!NetworkUtils.IsServer) return;
 
-        Plugin.ConfigManager.HostOnly.Value = !Plugin.ConfigManager.HostOnly.Value;
+        ConfigManager.Whiteboard_HostOnlyEdit.Value = !ConfigManager.Whiteboard_HostOnlyEdit.Value;
         UpdateHostOnlyCheckbox();
     }
 
@@ -117,7 +120,7 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
 
     private void UpdateHostOnlyCheckbox()
     {
-        HostOnlyCheckedObject.SetActive(Plugin.ConfigManager.HostOnly.Value);
+        HostOnlyCheckedObject.SetActive(ConfigManager.Whiteboard_HostOnlyEdit.Value);
     }
 
     private WhiteboardData GetDataFromUI()
@@ -137,7 +140,7 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
     {
         if (data == null)
         {
-            Plugin.logger.LogWarning("WhiteboardData is null in WhiteboardEditorBehaviour.SetDataToUI(); Setting WhiteboardData to default.");
+            Logger.LogWarning("WhiteboardData is null in WhiteboardEditorBehaviour.SetDataToUI(); Setting WhiteboardData to default.");
 
             data = new WhiteboardData();
         }
@@ -154,7 +157,7 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Plugin.logger.LogError($"Failed to set whiteboard editor ui data.\n\n{e}");
+            Logger.LogError($"Failed to set whiteboard editor ui data.\n\n{e}");
         }
     }
 

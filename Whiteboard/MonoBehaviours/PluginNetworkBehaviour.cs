@@ -1,4 +1,5 @@
-﻿using Unity.Netcode;
+﻿using com.github.zehsteam.Whiteboard.Helpers;
+using Unity.Netcode;
 
 namespace com.github.zehsteam.Whiteboard.MonoBehaviours;
 
@@ -14,6 +15,6 @@ internal class PluginNetworkBehaviour : NetworkBehaviour
     [ClientRpc]
     public void SetWhiteboardUnlockablePriceClientRpc(int price, ClientRpcParams clientRpcParams = default)
     {
-        UnlockableHelper.UpdateUnlockablePrice(Content.WhiteboardUnlockableItemDef, price);
+        UnlockableHelper.UpdateUnlockablePrice(Assets.WhiteboardUnlockableItemDef, price);
     }
 }

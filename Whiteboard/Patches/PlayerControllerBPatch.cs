@@ -1,4 +1,5 @@
-﻿using com.github.zehsteam.Whiteboard.MonoBehaviours;
+﻿using com.github.zehsteam.Whiteboard.Helpers;
+using com.github.zehsteam.Whiteboard.MonoBehaviours;
 using GameNetcodeStuff;
 using HarmonyLib;
 
@@ -11,12 +12,10 @@ internal class PlayerControllerBPatch
     [HarmonyPostfix]
     private static void StartPatch(ref PlayerControllerB __instance)
     {
-        if (__instance != PlayerUtils.GetLocalPlayerScript()) return;
+        if (!PlayerUtils.IsLocalPlayer(__instance))
+            return;
 
-        if (WhiteboardBehaviour.Instance != null)
-        {
-            WhiteboardBehaviour.Instance.SetWorldCanvasCamera();
-        }
+        WhiteboardBehaviour.Instance?.SetWorldCanvasCamera();
     }
 
     [HarmonyPatch(nameof(PlayerControllerB.KillPlayer))]

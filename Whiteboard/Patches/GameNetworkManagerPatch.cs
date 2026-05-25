@@ -16,19 +16,19 @@ internal class GameNetworkManagerPatch
 
     private static void AddNetworkPrefabs()
     {
-        AddNetworkPrefab(Content.NetworkHandlerPrefab);
+        AddNetworkPrefab(Assets.PluginNetworkHandlerPrefab);
     }
 
     private static void AddNetworkPrefab(GameObject prefab)
     {
         if (prefab == null)
         {
-            Plugin.logger.LogError($"Failed to add network prefab. GameObject is null.");
+            Logger.LogError($"Failed to add network prefab. GameObject is null.");
             return;
         }
 
         NetworkManager.Singleton.AddNetworkPrefab(prefab);
 
-        Plugin.logger.LogInfo($"Registered \"{prefab.name}\" network prefab.");
+        Logger.LogInfo($"Registered \"{prefab.name}\" network prefab.");
     }
 }
