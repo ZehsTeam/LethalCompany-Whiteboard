@@ -44,7 +44,7 @@ internal static class ConfigManager
         if (!NetworkUtils.IsServer)
             return;
 
-        PluginNetworkBehaviour.Instance?.SetWhiteboardUnlockablePriceClientRpc(Whiteboard_Price.Value);
+        PluginNetworkHandler.Instance?.SetWhiteboardUnlockablePriceClientRpc(Whiteboard_Price.Value);
     }
 
     private static void Whiteboard_HostOnly_SettingChanged()
@@ -52,6 +52,6 @@ internal static class ConfigManager
         if (!NetworkUtils.IsServer)
             return;
 
-        WhiteboardBehaviour.Instance?.IsHostOnly.Value = Whiteboard_HostOnlyEdit.Value;
+        MonoBehaviours.Whiteboard.Instance?.IsHostOnly.Value = Whiteboard_HostOnlyEdit.Value;
     }
 }

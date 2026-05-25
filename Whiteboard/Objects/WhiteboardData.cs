@@ -19,15 +19,15 @@ public class WhiteboardData : INetworkSerializable
     public WhiteboardData()
     {
         DisplayText = ConfigManager.Whiteboard_DefaultDisplayText?.Value;
-        TextHexColor = WhiteboardEditorBehaviour.DefaultTextHexColor;
-        FontSizeIndex = WhiteboardEditorBehaviour.DefaultFontSizeIndex;
+        TextHexColor = WhiteboardEditor.DefaultTextHexColor;
+        FontSizeIndex = WhiteboardEditor.DefaultFontSizeIndex;
     }
 
     public WhiteboardData(string displayText)
     {
         DisplayText = displayText;
-        TextHexColor = WhiteboardEditorBehaviour.DefaultTextHexColor;
-        FontSizeIndex = WhiteboardEditorBehaviour.DefaultFontSizeIndex;
+        TextHexColor = WhiteboardEditor.DefaultTextHexColor;
+        FontSizeIndex = WhiteboardEditor.DefaultFontSizeIndex;
     }
 
     public WhiteboardData(string displayText, string textHexColor, int fontSizeIndex, int fontStyleIndex, int fontFamilyIndex, int horizontalAlignmentIndex, int verticalAlignmentIndex) : this(displayText)

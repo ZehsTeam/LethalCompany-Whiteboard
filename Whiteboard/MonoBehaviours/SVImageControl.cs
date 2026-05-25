@@ -4,10 +4,10 @@ using UnityEngine.UI;
 
 namespace com.github.zehsteam.Whiteboard.MonoBehaviours;
 
-public class SVImageControlBehaviour : MonoBehaviour, IDragHandler, IPointerClickHandler
+public class SVImageControl : MonoBehaviour, IDragHandler, IPointerClickHandler
 {
     [SerializeField]
-    private ColorPickerControlBehaviour _colorPickerControlBehaviour;
+    private ColorPickerControl _colorPickerControlBehaviour;
 
     [SerializeField]
     private Image _pickerImage;

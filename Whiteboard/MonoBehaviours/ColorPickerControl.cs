@@ -1,16 +1,28 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 namespace com.github.zehsteam.Whiteboard.MonoBehaviours;
 
-public class ColorPickerControlBehaviour : MonoBehaviour
+public class ColorPickerControl : MonoBehaviour
 {
     [SerializeField]
-    private float _currentHue, _currentSat, _currentVal = 0f;
+    private float _currentHue;
 
     [SerializeField]
-    private RawImage _hueImage, _satValImage, _outputImage = null;
+    private float _currentSat;
+
+    [SerializeField]
+    private float _currentVal;
+
+    [SerializeField]
+    private RawImage _hueImage;
+
+    [SerializeField]
+    private RawImage _satValImage;
+
+    [SerializeField]
+    private RawImage _outputImage;
 
     [SerializeField]
     private Slider _hueSlider = null;
@@ -19,12 +31,14 @@ public class ColorPickerControlBehaviour : MonoBehaviour
     private TMP_InputField _hexColorInputField = null;
 
     [SerializeField]
-    private SVImageControlBehaviour _svImageControlBehaviour = null;
+    private SVImageControl _svImageControlBehaviour;
 
-    private Texture2D _hueTexture, _satValTexture, _outputTexture = null;
+    private Texture2D _hueTexture;
+    private Texture2D _satValTexture;
+    private Texture2D _outputTexture;
 
-    private bool _updatedHexColorInputFieldInternally = false;
-    private bool _initialized = false;
+    private bool _updatedHexColorInputFieldInternally;
+    private bool _initialized;
 
     private void Start()
     {

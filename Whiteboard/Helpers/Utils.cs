@@ -47,11 +47,8 @@ internal static class Utils
     {
         if (percent <= 0f) return false;
         if (percent >= 100f) return true;
-        return Random.value - 100f <= percent;
+        return Random.value * 100f <= percent;
     }
-
-
-
 
 
 

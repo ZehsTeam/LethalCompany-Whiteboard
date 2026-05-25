@@ -7,23 +7,42 @@ using UnityEngine.UI;
 
 namespace com.github.zehsteam.Whiteboard.MonoBehaviours;
 
-public class WhiteboardEditorBehaviour : MonoBehaviour
+public class WhiteboardEditor : MonoBehaviour
 {
-    public static WhiteboardEditorBehaviour Instance;
+    public static WhiteboardEditor Instance { get; private set; }
 
-    public GameObject EditorWindowObject = null;
-    public TMP_InputField DisplayTextInputField = null;
+    [SerializeField]
+    private GameObject _editorWindowObject;
 
-    public GameObject HostOnlyObject = null;
-    public Button HostOnlyButton = null;
-    public GameObject HostOnlyCheckedObject = null;
+    [SerializeField]
+    private TMP_InputField _displayTextInputField;
 
-    public Image TextColorPreviewImage = null;
-    public TMP_Dropdown FontSizeDropdown = null;
-    public TMP_Dropdown FontStyleDropdown = null;
-    public TMP_Dropdown FontFamilyDropdown = null;
-    public TMP_Dropdown HorizontalAlignmentDropdown = null;
-    public TMP_Dropdown VerticalAlignmentDropdown = null;
+    [SerializeField]
+    private GameObject _hostOnlyObject;
+
+    [SerializeField]
+    private Button _hostOnlyButton;
+
+    [SerializeField]
+    private GameObject _hostOnlyCheckedObject;
+
+    [SerializeField]
+    private Image _textColorPreviewImage;
+
+    [SerializeField]
+    private TMP_Dropdown _fontSizeDropdown;
+
+    [SerializeField]
+    private TMP_Dropdown _fontStyleDropdown;
+
+    [SerializeField]
+    private TMP_Dropdown _fontFamilyDropdown;
+
+    [SerializeField]
+    private TMP_Dropdown _horizontalAlignmentDropdown;
+
+    [SerializeField]
+    private TMP_Dropdown _verticalAlignmentDropdown;
 
     public const int DefaultFontSizeIndex = 7; // 0.12
     public const string DefaultTextHexColor = "#000000";
@@ -31,9 +50,26 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
     public bool IsWindowOpen { get; private set; }
     public string TextHexColor { get; private set; }
 
+    public static void Spawn()
+    {
+        if (Instance != null)
+            return;
+
+        Instantiate(Assets.WhiteboardEditorCanvasPrefab);
+
+        Logger.LogInfo("Spawned WhiteboardEditorCanvas.");
+    }
+
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        // Ensure there is only one instance of the Singleton
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject); // Destroy duplicate object
+            return;
+        }
+
+        Instance = this;
     }
 
     private void Start()
@@ -45,7 +81,7 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
 
     public void OpenWindow()
     {
-        if (WhiteboardBehaviour.Instance == null)
+        if (Whiteboard.Instance == null)
         {
             Logger.LogError("Failed to open whiteboard editor window. Whiteboard instance was not found.");
             return;
@@ -53,7 +89,7 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
 
         if (Utils.IsQuickMenuOpen() || IsWindowOpen) return;
 
-        HostOnlyObject.SetActive(NetworkUtils.IsServer);
+        _hostOnlyObject.SetActive(NetworkUtils.IsServer);
 
         if (NetworkUtils.IsServer)
         {
@@ -61,34 +97,34 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
         }
 
         IsWindowOpen = true;
-        EditorWindowObject.SetActive(true);
-        SetDataToUI(WhiteboardBehaviour.Instance.Data);
+        _editorWindowObject.SetActive(true);
+        SetDataToUI(Whiteboard.Instance.Data);
         Utils.SetCursorLockState(false);
         PlayerUtils.SetControlsEnabled(false);
     }
 
     public void CloseWindow()
     {
-        if (ColorPickerBehaviour.Instance.IsWindowOpen)
+        if (ColorPicker.Instance.IsWindowOpen)
         {
-            ColorPickerBehaviour.Instance.CloseWindow();
+            ColorPicker.Instance.CloseWindow();
         }
 
         IsWindowOpen = false;
-        EditorWindowObject.SetActive(false);
+        _editorWindowObject.SetActive(false);
         Utils.SetCursorLockState(true);
         PlayerUtils.SetControlsEnabled(true);
     }
 
     public void OnConfirmButtonClicked()
     {
-        if (WhiteboardBehaviour.Instance == null)
+        if (Whiteboard.Instance == null)
         {
             Logger.LogError("Failed to confirm whiteboard changes. Whiteboard instance was not found.");
             return;
         }
 
-        WhiteboardBehaviour.Instance.SetData(GetDataFromUI());
+        Whiteboard.Instance.SetData(GetDataFromUI());
 
         CloseWindow();
     }
@@ -113,25 +149,25 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
 
     public void OnColorPickerButtonClicked()
     {
-        if (ColorPickerBehaviour.Instance == null) return;
+        if (ColorPicker.Instance == null) return;
 
-        ColorPickerBehaviour.Instance.OpenWindow();
+        ColorPicker.Instance.OpenWindow();
     }
 
     private void UpdateHostOnlyCheckbox()
     {
-        HostOnlyCheckedObject.SetActive(ConfigManager.Whiteboard_HostOnlyEdit.Value);
+        _hostOnlyCheckedObject.SetActive(ConfigManager.Whiteboard_HostOnlyEdit.Value);
     }
 
     private WhiteboardData GetDataFromUI()
     {
-        string displayText = DisplayTextInputField.text;
+        string displayText = _displayTextInputField.text;
         string textHexColor = TextHexColor;
-        int fontSizeIndex = FontSizeDropdown.value;
-        int fontStyleIndex = FontStyleDropdown.value;
-        int fontFamilyIndex = FontFamilyDropdown.value;
-        int horizontalAlignmentIndex = HorizontalAlignmentDropdown.value;
-        int verticalAlignmentIndex = VerticalAlignmentDropdown.value;
+        int fontSizeIndex = _fontSizeDropdown.value;
+        int fontStyleIndex = _fontStyleDropdown.value;
+        int fontFamilyIndex = _fontFamilyDropdown.value;
+        int horizontalAlignmentIndex = _horizontalAlignmentDropdown.value;
+        int verticalAlignmentIndex = _verticalAlignmentDropdown.value;
 
         return new WhiteboardData(displayText, textHexColor, fontSizeIndex, fontStyleIndex, fontFamilyIndex, horizontalAlignmentIndex, verticalAlignmentIndex);
     }
@@ -147,13 +183,13 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
 
         try
         {
-            DisplayTextInputField.text = data.DisplayText;
+            _displayTextInputField.text = data.DisplayText;
             SetTextHexColor(data.TextHexColor);
-            FontSizeDropdown.value = data.FontSizeIndex;
-            FontStyleDropdown.value = data.FontStyleIndex;
-            FontFamilyDropdown.value = data.FontFamilyIndex;
-            HorizontalAlignmentDropdown.value = data.HorizontalAlignmentIndex;
-            VerticalAlignmentDropdown.value = data.VerticalAlignmentIndex;
+            _fontSizeDropdown.value = data.FontSizeIndex;
+            _fontStyleDropdown.value = data.FontStyleIndex;
+            _fontFamilyDropdown.value = data.FontFamilyIndex;
+            _horizontalAlignmentDropdown.value = data.HorizontalAlignmentIndex;
+            _verticalAlignmentDropdown.value = data.VerticalAlignmentIndex;
         }
         catch (System.Exception e)
         {
@@ -165,7 +201,7 @@ public class WhiteboardEditorBehaviour : MonoBehaviour
     {
         if (ColorUtility.TryParseHtmlString(TextHexColor, out Color color))
         {
-            TextColorPreviewImage.color = color;
+            _textColorPreviewImage.color = color;
         }
     }
 

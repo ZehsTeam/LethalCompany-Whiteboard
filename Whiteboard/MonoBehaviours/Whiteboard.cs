@@ -8,35 +8,52 @@ using UnityEngine;
 
 namespace com.github.zehsteam.Whiteboard.MonoBehaviours;
 
-public class WhiteboardBehaviour : NetworkBehaviour
+public class Whiteboard : NetworkBehaviour
 {
-    public static WhiteboardBehaviour Instance;
+    public static Whiteboard Instance { get; private set; }
 
-    public InteractTrigger InteractTrigger;
-    public Canvas WorldCanvas = null;
-    public TextMeshProUGUI WhiteboardText = null;
-    public float[] FontSizeArray = [];
-    public FontStyles[] FontStyleArray = [];
-    public TMP_FontAsset[] FontAssetArray = [];
-    public SpriteSheetData EmotesSpriteSheetData = null;
+    [SerializeField]
+    private InteractTrigger _interactTrigger;
+
+    [SerializeField]
+    private Canvas _worldCanvas;
+
+    [SerializeField]
+    private TextMeshProUGUI _whiteboardText;
+
+    [SerializeField]
+    private TMP_FontAsset[] _fontAssetArray = [];
+
+    [SerializeField]
+    private SpriteSheetData _emotesSpriteSheetData;
 
     [HideInInspector]
-    public NetworkVariable<bool> IsHostOnly = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<bool> IsHostOnly = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    public WhiteboardData Data {  get; private set; }
+    public WhiteboardData Data { get; private set; }
+
+    private float[] _fontSizeArray = [];
+    private FontStyles[] _fontStyleArray = [];
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        // Ensure there is only one instance of the Singleton
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject); // Destroy duplicate object
+            return;
+        }
+
+        Instance = this;
 
         Data = new WhiteboardData();
     }
 
     private void Start()
     {
-        if (EmotesSpriteSheetData != null)
+        if (_emotesSpriteSheetData != null)
         {
-            WhiteboardText.spriteAsset = EmotesSpriteSheetData.SpriteAsset;
+            _whiteboardText.spriteAsset = _emotesSpriteSheetData.SpriteAsset;
         }
 
         if (NetworkUtils.IsServer)
@@ -59,7 +76,7 @@ public class WhiteboardBehaviour : NetworkBehaviour
         }
         else if (IsHostOnly.Value)
         {
-            InteractTrigger.interactable = false;
+            _interactTrigger.interactable = false;
         }
     }
 
@@ -67,11 +84,11 @@ public class WhiteboardBehaviour : NetworkBehaviour
     {
         IsHostOnly.OnValueChanged -= OnIsHostOnlyChanged;
 
-        if (WhiteboardEditorBehaviour.Instance == null) return;
+        if (WhiteboardEditor.Instance == null) return;
 
-        if (WhiteboardEditorBehaviour.Instance.IsWindowOpen)
+        if (WhiteboardEditor.Instance.IsWindowOpen)
         {
-            WhiteboardEditorBehaviour.Instance.CloseWindow();
+            WhiteboardEditor.Instance.CloseWindow();
         }
     }
 
@@ -79,18 +96,18 @@ public class WhiteboardBehaviour : NetworkBehaviour
     {
         if (NetworkUtils.IsServer) return;
 
-        InteractTrigger.interactable = !current;
+        _interactTrigger.interactable = !current;
     }
 
     public void OnInteract()
     {
-        if (WhiteboardEditorBehaviour.Instance == null)
+        if (WhiteboardEditor.Instance == null)
         {
             Logger.LogError("Failed to open whiteboard editor window. WhiteboardEditorBehaviour instance was not found.");
             return;
         }
 
-        WhiteboardEditorBehaviour.Instance.OpenWindow();
+        WhiteboardEditor.Instance.OpenWindow();
     }
 
     public void SetWorldCanvasCamera()
@@ -101,7 +118,7 @@ public class WhiteboardBehaviour : NetworkBehaviour
             return;
         }
         
-        WorldCanvas.worldCamera = playerScript.gameplayCamera;
+        _worldCanvas.worldCamera = playerScript.gameplayCamera;
 
         Logger.LogInfo("Set whiteboard world canvas camera.", extended: true);
     }
@@ -111,8 +128,8 @@ public class WhiteboardBehaviour : NetworkBehaviour
         if (!NetworkUtils.IsServer) return;
 
         string displayText = Utils.LoadFromCurrentSaveFile("Whiteboard_DisplayText", defaultValue: ConfigManager.Whiteboard_DefaultDisplayText.Value);
-        string textHexColor = Utils.LoadFromCurrentSaveFile("Whiteboard_TextHexColor", defaultValue: WhiteboardEditorBehaviour.DefaultTextHexColor);
-        int fontSizeIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_FontSizeIndex", defaultValue: WhiteboardEditorBehaviour.DefaultFontSizeIndex);
+        string textHexColor = Utils.LoadFromCurrentSaveFile("Whiteboard_TextHexColor", defaultValue: WhiteboardEditor.DefaultTextHexColor);
+        int fontSizeIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_FontSizeIndex", defaultValue: WhiteboardEditor.DefaultFontSizeIndex);
         int fontStyleIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_FontStyleIndex", defaultValue: 0);
         int fontFamilyIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_FontFamilyIndex", defaultValue: 0);
         int horizontalAlignmentIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_HorizontalAlignmentIndex", defaultValue: 0);
@@ -227,9 +244,9 @@ public class WhiteboardBehaviour : NetworkBehaviour
             displayText += $"<color={Data.TextHexColor}>";
         }
 
-        if (EmotesSpriteSheetData != null)
+        if (_emotesSpriteSheetData != null)
         {
-            displayText += EmotesSpriteSheetData.GetParsedText(Data.DisplayText);
+            displayText += _emotesSpriteSheetData.GetParsedText(Data.DisplayText);
         }
         else
         {
@@ -242,12 +259,12 @@ public class WhiteboardBehaviour : NetworkBehaviour
             displayText = displayText.ToLower();
         }
 
-        WhiteboardText.text = displayText;
-        WhiteboardText.fontSize = FontSizeArray[Data.FontSizeIndex];
-        WhiteboardText.fontStyle = FontStyleArray[Data.FontStyleIndex];
-        WhiteboardText.font = FontAssetArray[Data.FontFamilyIndex];
+        _whiteboardText.text = displayText;
+        _whiteboardText.fontSize = _fontSizeArray[Data.FontSizeIndex];
+        _whiteboardText.fontStyle = _fontStyleArray[Data.FontStyleIndex];
+        _whiteboardText.font = _fontAssetArray[Data.FontFamilyIndex];
 
-        WhiteboardText.horizontalAlignment = Data.HorizontalAlignmentIndex switch
+        _whiteboardText.horizontalAlignment = Data.HorizontalAlignmentIndex switch
         {
             0 => HorizontalAlignmentOptions.Left,
             1 => HorizontalAlignmentOptions.Center,
@@ -255,7 +272,7 @@ public class WhiteboardBehaviour : NetworkBehaviour
             _ => HorizontalAlignmentOptions.Left,
         };
 
-        WhiteboardText.verticalAlignment = Data.VerticalAlignmentIndex switch
+        _whiteboardText.verticalAlignment = Data.VerticalAlignmentIndex switch
         {
             0 => VerticalAlignmentOptions.Top,
             1 => VerticalAlignmentOptions.Middle,

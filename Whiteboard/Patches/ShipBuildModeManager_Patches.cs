@@ -4,15 +4,16 @@ using HarmonyLib;
 namespace com.github.zehsteam.Whiteboard.Patches;
 
 [HarmonyPatch(typeof(ShipBuildModeManager))]
-internal class ShipBuildModeManagerPatch
+internal class ShipBuildModeManager_Patches
 {
     [HarmonyPatch(nameof(ShipBuildModeManager.PlayerMeetsConditionsToBuild))]
     [HarmonyPostfix]
-    private static void PlayerMeetsConditionsToBuild(ref bool __result)
+    private static void PlayerMeetsConditionsToBuild_Patch(ref bool __result)
     {
-        if (WhiteboardEditorBehaviour.Instance == null) return;
+        if (WhiteboardEditor.Instance == null)
+            return;
 
-        if (WhiteboardEditorBehaviour.Instance.IsWindowOpen)
+        if (WhiteboardEditor.Instance.IsWindowOpen)
         {
             __result = false;
         }

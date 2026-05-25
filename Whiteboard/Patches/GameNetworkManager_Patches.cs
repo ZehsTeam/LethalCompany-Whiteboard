@@ -5,11 +5,11 @@ using UnityEngine;
 namespace com.github.zehsteam.Whiteboard.Patches;
 
 [HarmonyPatch(typeof(GameNetworkManager))]
-internal class GameNetworkManagerPatch
+internal class GameNetworkManager_Patches
 {
     [HarmonyPatch(nameof(GameNetworkManager.Start))]
     [HarmonyPostfix]
-    private static void StartPatch()
+    private static void Start_Patch()
     {
         AddNetworkPrefabs();
     }

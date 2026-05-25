@@ -24,11 +24,11 @@ internal class Plugin : BaseUnityPlugin
         Whiteboard.Logger.Initialize(BepInEx.Logging.Logger.CreateLogSource(MyPluginInfo.PLUGIN_GUID));
         Whiteboard.Logger.LogInfo($"{MyPluginInfo.PLUGIN_NAME} has awoken!");
 
-        _harmony.PatchAll(typeof(GameNetworkManagerPatch));
-        _harmony.PatchAll(typeof(StartOfRoundPatch));
-        _harmony.PatchAll(typeof(HUDManagerPatch));
-        _harmony.PatchAll(typeof(PlayerControllerBPatch));
-        _harmony.PatchAll(typeof(ShipBuildModeManagerPatch));
+        _harmony.PatchAll(typeof(GameNetworkManager_Patches));
+        _harmony.PatchAll(typeof(StartOfRound_Patches));
+        _harmony.PatchAll(typeof(HUDManager_Patches));
+        _harmony.PatchAll(typeof(PlayerControllerB_Patches));
+        _harmony.PatchAll(typeof(ShipBuildModeManager_Patches));
 
         ConfigManager.Initialize(Config);
 
@@ -42,14 +42,5 @@ internal class Plugin : BaseUnityPlugin
     private void RegisterUnlockableItems()
     {
         UnlockableHelper.RegisterUnlockable(Assets.WhiteboardUnlockableItemDef, LethalLib.Modules.StoreType.Decor, price: ConfigManager.Whiteboard_Price.Value, Assets.WhiteboardBuyTerminalNode);
-    }
-
-    public void SpawnWhiteboardEditorCanvas()
-    {
-        if (WhiteboardEditorBehaviour.Instance != null) return;
-
-        Instantiate(Assets.WhiteboardEditorCanvasPrefab);
-
-        Logger.LogInfo("Spawned WhiteboardEditorCanvas.");
     }
 }

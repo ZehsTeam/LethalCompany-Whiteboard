@@ -6,27 +6,28 @@ using HarmonyLib;
 namespace com.github.zehsteam.Whiteboard.Patches;
 
 [HarmonyPatch(typeof(PlayerControllerB))]
-internal class PlayerControllerBPatch
+internal class PlayerControllerB_Patches
 {
     [HarmonyPatch(nameof(PlayerControllerB.Start))]
     [HarmonyPostfix]
-    private static void StartPatch(ref PlayerControllerB __instance)
+    private static void Start_Patch(ref PlayerControllerB __instance)
     {
         if (!PlayerUtils.IsLocalPlayer(__instance))
             return;
 
-        WhiteboardBehaviour.Instance?.SetWorldCanvasCamera();
+        MonoBehaviours.Whiteboard.Instance?.SetWorldCanvasCamera();
     }
 
     [HarmonyPatch(nameof(PlayerControllerB.KillPlayer))]
     [HarmonyPostfix]
-    private static void KillPlayerPatch()
+    private static void KillPlayer_Patch()
     {
-        if (WhiteboardEditorBehaviour.Instance == null) return;
+        if (WhiteboardEditor.Instance == null)
+            return;
 
-        if (WhiteboardEditorBehaviour.Instance.IsWindowOpen)
+        if (WhiteboardEditor.Instance.IsWindowOpen)
         {
-            WhiteboardEditorBehaviour.Instance.CloseWindow();
+            WhiteboardEditor.Instance.CloseWindow();
         }
     }
 }

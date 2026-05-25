@@ -52,7 +52,7 @@ internal static class Assets
     {
         // Network Prefabs
         PluginNetworkHandlerPrefab = LoadAsset<GameObject>("PluginNetworkHandler", assetBundle);
-        PluginNetworkHandlerPrefab.AddComponent<PluginNetworkBehaviour>();
+        PluginNetworkHandlerPrefab.AddComponent<PluginNetworkHandler>();
 
         // Prefabs
         WhiteboardEditorCanvasPrefab = LoadAsset<GameObject>("WhiteboardEditorCanvas", assetBundle);
