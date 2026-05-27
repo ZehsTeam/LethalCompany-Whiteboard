@@ -1,4 +1,11 @@
-# v1.2.0
+# v1.3.0
+
+- Updated for Lethal Company v81
+- Fixed not being able to crouch.
+- Improved the codebase.
+- Updated mod icon.
+
+## v1.2.0
 
 - Updated for Lethal Company v73
 
