@@ -1,6 +1,7 @@
 ﻿using GameNetcodeStuff;
 using System;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
@@ -110,6 +111,37 @@ internal static class PlayerUtils
     }
 
 
+
+    public static void SetCursorLockState(bool value)
+    {
+        // If the pause menu is open and you try to lock the cursor, return.
+        if (IsQuickMenuOpen())
+            return;
+
+        Cursor.lockState = value ? CursorLockMode.Locked : CursorLockMode.None;
+
+        if (value)
+        {
+            Cursor.visible = false;
+        }
+        else
+        {
+            bool localPlayerUsingController = StartOfRound.Instance?.localPlayerUsingController ?? false;
+
+            if (!localPlayerUsingController)
+            {
+                Cursor.visible = true;
+            }
+        }
+    }
+
+    public static bool IsQuickMenuOpen()
+    {
+        if (!TryGetLocalPlayerScript(out PlayerControllerB playerScript))
+            return false;
+
+        return playerScript.quickMenuManager.isMenuOpen;
+    }
 
     public static void SetControlsEnabled(bool value)
     {

@@ -44,7 +44,7 @@ internal static class ConfigManager
         if (!NetworkUtils.IsServer)
             return;
 
-        PluginNetworkHandler.Instance?.SetWhiteboardUnlockablePriceClientRpc(Whiteboard_Price.Value);
+        PluginNetworkHandler.Instance?.SetWhiteboardUnlockablePrice_ClientRpc(Whiteboard_Price.Value);
     }
 
     private static void Whiteboard_HostOnly_SettingChanged()

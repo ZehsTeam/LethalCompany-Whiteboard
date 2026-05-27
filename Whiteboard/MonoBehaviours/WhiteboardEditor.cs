@@ -1,6 +1,8 @@
 ﻿using com.github.zehsteam.Whiteboard.Helpers;
 using com.github.zehsteam.Whiteboard.Managers;
 using com.github.zehsteam.Whiteboard.Objects;
+using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -77,6 +79,40 @@ public class WhiteboardEditor : MonoBehaviour
         CloseWindow();
 
         TextHexColor = DefaultTextHexColor;
+
+        InitializeFontSizeDropdown();
+        InitializeFontStyleDropdown();
+    }
+
+    private void InitializeFontSizeDropdown()
+    {
+        _fontSizeDropdown.ClearOptions();
+
+        List<TMP_Dropdown.OptionData> options = [];
+
+        int length = Whiteboard.FontSizeArray.Length;
+        int baseValue = 5;
+
+        for (int i = 0; i < length; i++)
+        {
+            options.Add(new($"{baseValue + i}"));
+        }
+
+        _fontSizeDropdown.AddOptions(options);
+    }
+
+    private void InitializeFontStyleDropdown()
+    {
+        _fontStyleDropdown.ClearOptions();
+
+        List<TMP_Dropdown.OptionData> options = [];
+
+        foreach (var item in Whiteboard.FontStyleArray)
+        {
+            options.Add(new(item.ToString()));
+        }
+
+        _fontStyleDropdown.AddOptions(options);
     }
 
     public void OpenWindow()
@@ -87,7 +123,8 @@ public class WhiteboardEditor : MonoBehaviour
             return;
         }
 
-        if (Utils.IsQuickMenuOpen() || IsWindowOpen) return;
+        if (PlayerUtils.IsQuickMenuOpen() || IsWindowOpen)
+            return;
 
         _hostOnlyObject.SetActive(NetworkUtils.IsServer);
 
@@ -98,8 +135,8 @@ public class WhiteboardEditor : MonoBehaviour
 
         IsWindowOpen = true;
         _editorWindowObject.SetActive(true);
-        SetDataToUI(Whiteboard.Instance.Data);
-        Utils.SetCursorLockState(false);
+        SetUIFromData(Whiteboard.Instance.Data);
+        PlayerUtils.SetCursorLockState(false);
         PlayerUtils.SetControlsEnabled(false);
     }
 
@@ -112,7 +149,7 @@ public class WhiteboardEditor : MonoBehaviour
 
         IsWindowOpen = false;
         _editorWindowObject.SetActive(false);
-        Utils.SetCursorLockState(true);
+        PlayerUtils.SetCursorLockState(true);
         PlayerUtils.SetControlsEnabled(true);
     }
 
@@ -136,7 +173,7 @@ public class WhiteboardEditor : MonoBehaviour
 
     public void OnResetButtonClicked()
     {
-        SetDataToUI(new WhiteboardData());
+        SetUIFromData(new WhiteboardData());
     }
 
     public void OnHostOnlyButtonClicked()
@@ -172,11 +209,11 @@ public class WhiteboardEditor : MonoBehaviour
         return new WhiteboardData(displayText, textHexColor, fontSizeIndex, fontStyleIndex, fontFamilyIndex, horizontalAlignmentIndex, verticalAlignmentIndex);
     }
 
-    private void SetDataToUI(WhiteboardData data)
+    private void SetUIFromData(WhiteboardData data)
     {
         if (data == null)
         {
-            Logger.LogWarning("WhiteboardData is null in WhiteboardEditorBehaviour.SetDataToUI(); Setting WhiteboardData to default.");
+            Logger.LogWarning($"{nameof(WhiteboardData)} is null in {nameof(WhiteboardEditor)}.{nameof(SetUIFromData)}() Setting {nameof(WhiteboardData)} to default.");
 
             data = new WhiteboardData();
         }
@@ -191,9 +228,9 @@ public class WhiteboardEditor : MonoBehaviour
             _horizontalAlignmentDropdown.value = data.HorizontalAlignmentIndex;
             _verticalAlignmentDropdown.value = data.VerticalAlignmentIndex;
         }
-        catch (System.Exception e)
+        catch (Exception ex)
         {
-            Logger.LogError($"Failed to set whiteboard editor ui data.\n\n{e}");
+            Logger.LogError($"Failed to set whiteboard editor ui data. {ex}");
         }
     }
 

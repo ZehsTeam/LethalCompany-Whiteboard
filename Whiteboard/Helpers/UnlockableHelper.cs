@@ -1,10 +1,11 @@
 ﻿using LethalLib.Extras;
+using LethalLib.Modules;
 
 namespace com.github.zehsteam.Whiteboard.Helpers;
 
 internal static class UnlockableHelper
 {
-    public static void RegisterUnlockable(UnlockableItemDef unlockableItemDef, LethalLib.Modules.StoreType storeType, int price, TerminalNode terminalNode)
+    public static void RegisterUnlockable(UnlockableItemDef unlockableItemDef, StoreType storeType, int price, TerminalNode terminalNode)
     {
         try
         {

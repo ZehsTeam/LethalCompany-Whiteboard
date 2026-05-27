@@ -38,7 +38,7 @@ internal class PluginNetworkHandler : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void SetWhiteboardUnlockablePriceClientRpc(int price, ClientRpcParams clientRpcParams = default)
+    public void SetWhiteboardUnlockablePrice_ClientRpc(int price, ClientRpcParams clientRpcParams = default)
     {
         UnlockableHelper.UpdateUnlockablePrice(Assets.WhiteboardUnlockableItemDef, price);
     }

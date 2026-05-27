@@ -5,7 +5,7 @@ using UnityEngine;
 namespace com.github.zehsteam.Whiteboard.Patches;
 
 [HarmonyPatch(typeof(GameNetworkManager))]
-internal class GameNetworkManager_Patches
+internal static class GameNetworkManager_Patches
 {
     [HarmonyPatch(nameof(GameNetworkManager.Start))]
     [HarmonyPostfix]
@@ -30,5 +30,12 @@ internal class GameNetworkManager_Patches
         NetworkManager.Singleton.AddNetworkPrefab(prefab);
 
         Logger.LogInfo($"Registered \"{prefab.name}\" network prefab.");
+    }
+
+    [HarmonyPatch(nameof(GameNetworkManager.SaveGameValues))]
+    [HarmonyPostfix]
+    private static void SaveGameValues_Patch()
+    {
+        MonoBehaviours.Whiteboard.Instance?.SaveData();
     }
 }

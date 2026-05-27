@@ -9,7 +9,7 @@ using UnityEngine;
 namespace com.github.zehsteam.Whiteboard.Patches;
 
 [HarmonyPatch(typeof(StartOfRound))]
-internal class StartOfRound_Patches
+internal static class StartOfRound_Patches
 {
     [HarmonyPatch(nameof(StartOfRound.Awake))]
     [HarmonyPostfix]
@@ -39,7 +39,7 @@ internal class StartOfRound_Patches
             }
         };
 
-        PluginNetworkHandler.Instance?.SetWhiteboardUnlockablePriceClientRpc(ConfigManager.Whiteboard_Price.Value, clientRpcParams);
+        PluginNetworkHandler.Instance?.SetWhiteboardUnlockablePrice_ClientRpc(ConfigManager.Whiteboard_Price.Value, clientRpcParams);
     }
 
     [HarmonyPatch(nameof(StartOfRound.ReviveDeadPlayers))]

@@ -6,7 +6,7 @@ using HarmonyLib;
 namespace com.github.zehsteam.Whiteboard.Patches;
 
 [HarmonyPatch(typeof(PlayerControllerB))]
-internal class PlayerControllerB_Patches
+internal static class PlayerControllerB_Patches
 {
     [HarmonyPatch(nameof(PlayerControllerB.Start))]
     [HarmonyPostfix]

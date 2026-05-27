@@ -2,6 +2,7 @@
 using com.github.zehsteam.Whiteboard.Managers;
 using com.github.zehsteam.Whiteboard.Objects;
 using GameNetcodeStuff;
+using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -32,8 +33,34 @@ public class Whiteboard : NetworkBehaviour
 
     public WhiteboardData Data { get; private set; }
 
-    private float[] _fontSizeArray = [];
-    private FontStyles[] _fontStyleArray = [];
+    public static float[] FontSizeArray { get; private set; }
+    public static FontStyles[] FontStyleArray { get; private set; }
+
+    static Whiteboard()
+    {
+        {
+            int length = 36;
+            float valueBase = 0.05f;
+            float valueStep = 0.01f;
+
+            List<float> fontSizeList = [];
+
+            for (int i = 0; i < length; i++)
+            {
+                fontSizeList.Add(valueBase + (valueStep * i));
+            }
+
+            FontSizeArray = [.. fontSizeList];
+        }
+
+        FontStyleArray = [
+            FontStyles.Normal,
+            FontStyles.Bold,
+            FontStyles.Italic,
+            FontStyles.Underline,
+            FontStyles.Strikethrough
+        ];
+    }
 
     private void Awake()
     {
@@ -62,7 +89,7 @@ public class Whiteboard : NetworkBehaviour
         }
         else
         {
-            RequestDataServerRpc();
+            RequestData_ServerRpc();
         }
     }
 
@@ -84,7 +111,8 @@ public class Whiteboard : NetworkBehaviour
     {
         IsHostOnly.OnValueChanged -= OnIsHostOnlyChanged;
 
-        if (WhiteboardEditor.Instance == null) return;
+        if (WhiteboardEditor.Instance == null)
+            return;
 
         if (WhiteboardEditor.Instance.IsWindowOpen)
         {
@@ -94,7 +122,8 @@ public class Whiteboard : NetworkBehaviour
 
     private void OnIsHostOnlyChanged(bool previous, bool current)
     {
-        if (NetworkUtils.IsServer) return;
+        if (NetworkUtils.IsServer)
+            return;
 
         _interactTrigger.interactable = !current;
     }
@@ -123,41 +152,52 @@ public class Whiteboard : NetworkBehaviour
         Logger.LogInfo("Set whiteboard world canvas camera.", extended: true);
     }
 
-    private void LoadData()
+    public void LoadData()
     {
-        if (!NetworkUtils.IsServer) return;
+        if (!NetworkUtils.IsServer)
+            return;
 
-        string displayText = Utils.LoadFromCurrentSaveFile("Whiteboard_DisplayText", defaultValue: ConfigManager.Whiteboard_DefaultDisplayText.Value);
-        string textHexColor = Utils.LoadFromCurrentSaveFile("Whiteboard_TextHexColor", defaultValue: WhiteboardEditor.DefaultTextHexColor);
-        int fontSizeIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_FontSizeIndex", defaultValue: WhiteboardEditor.DefaultFontSizeIndex);
-        int fontStyleIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_FontStyleIndex", defaultValue: 0);
-        int fontFamilyIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_FontFamilyIndex", defaultValue: 0);
-        int horizontalAlignmentIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_HorizontalAlignmentIndex", defaultValue: 0);
-        int verticalAlignmentIndex = Utils.LoadFromCurrentSaveFile("Whiteboard_VerticalAlignmentIndex", defaultValue: 0);
+        if (!GameSaveFileHelper.IsSaveFileCreated())
+        {
+            SetData(new WhiteboardData());
+            return;
+        }
+
+        string displayText = GameSaveFileHelper.Load("Whiteboard_DisplayText", defaultValue: ConfigManager.Whiteboard_DefaultDisplayText.Value);
+        string textHexColor = GameSaveFileHelper.Load("Whiteboard_TextHexColor", defaultValue: WhiteboardEditor.DefaultTextHexColor);
+        int fontSizeIndex = GameSaveFileHelper.Load("Whiteboard_FontSizeIndex", defaultValue: WhiteboardEditor.DefaultFontSizeIndex);
+        int fontStyleIndex = GameSaveFileHelper.Load("Whiteboard_FontStyleIndex", defaultValue: 0);
+        int fontFamilyIndex = GameSaveFileHelper.Load("Whiteboard_FontFamilyIndex", defaultValue: 0);
+        int horizontalAlignmentIndex = GameSaveFileHelper.Load("Whiteboard_HorizontalAlignmentIndex", defaultValue: 0);
+        int verticalAlignmentIndex = GameSaveFileHelper.Load("Whiteboard_VerticalAlignmentIndex", defaultValue: 0);
 
         SetData(new WhiteboardData(displayText, textHexColor, fontSizeIndex, fontStyleIndex, fontFamilyIndex, horizontalAlignmentIndex, verticalAlignmentIndex));
     }
 
-    private void SaveData()
+    public void SaveData()
     {
-        if (!NetworkUtils.IsServer) return;
+        if (!NetworkUtils.IsServer)
+            return;
 
-        Utils.SaveToCurrentSaveFile("Whiteboard_DisplayText", Data.DisplayText);
-        Utils.SaveToCurrentSaveFile("Whiteboard_TextHexColor", Data.TextHexColor);
-        Utils.SaveToCurrentSaveFile("Whiteboard_FontSizeIndex", Data.FontSizeIndex);
-        Utils.SaveToCurrentSaveFile("Whiteboard_FontStyleIndex", Data.FontStyleIndex);
-        Utils.SaveToCurrentSaveFile("Whiteboard_FontFamilyIndex", Data.FontFamilyIndex);
-        Utils.SaveToCurrentSaveFile("Whiteboard_HorizontalAlignmentIndex", Data.HorizontalAlignmentIndex);
-        Utils.SaveToCurrentSaveFile("Whiteboard_VerticalAlignmentIndex", Data.VerticalAlignmentIndex);
+        if (!GameSaveFileHelper.IsSaveFileCreated())
+            return;
+
+        GameSaveFileHelper.Save("Whiteboard_DisplayText", Data.DisplayText);
+        GameSaveFileHelper.Save("Whiteboard_TextHexColor", Data.TextHexColor);
+        GameSaveFileHelper.Save("Whiteboard_FontSizeIndex", Data.FontSizeIndex);
+        GameSaveFileHelper.Save("Whiteboard_FontStyleIndex", Data.FontStyleIndex);
+        GameSaveFileHelper.Save("Whiteboard_FontFamilyIndex", Data.FontFamilyIndex);
+        GameSaveFileHelper.Save("Whiteboard_HorizontalAlignmentIndex", Data.HorizontalAlignmentIndex);
+        GameSaveFileHelper.Save("Whiteboard_VerticalAlignmentIndex", Data.VerticalAlignmentIndex);
     }
 
     public void SetData(WhiteboardData data)
     {
-        SetDataServerRpc(data, NetworkUtils.LocalClientId);
+        SetData_ServerRpc(data, NetworkUtils.LocalClientId);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void SetDataServerRpc(WhiteboardData data, ulong senderClientId)
+    public void SetData_ServerRpc(WhiteboardData data, ulong senderClientId)
     {
         if (NetworkUtils.IsLocalClientId(senderClientId))
         {
@@ -176,20 +216,21 @@ public class Whiteboard : NetworkBehaviour
             Logger.LogInfo($"Client #{senderClientId} set the whiteboard data. Display text: \"{data.DisplayText}\".", extended: true);
         }
 
-        SetDataClientRpc(data);
-        SetDataOnLocalClient(data);
+        SetData_ClientRpc(data);
+        SetData_Local(data);
     }
     
     [ClientRpc]
-    private void SetDataClientRpc(WhiteboardData data)
+    private void SetData_ClientRpc(WhiteboardData data)
     {
-        if (NetworkUtils.IsServer) return;
+        if (NetworkUtils.IsServer)
+            return;
 
-        SetDataOnLocalClient(data);
+        SetData_Local(data);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void RequestDataServerRpc(ServerRpcParams serverRpcParams = default)
+    public void RequestData_ServerRpc(ServerRpcParams serverRpcParams = default)
     {
         var senderClientId = serverRpcParams.Receive.SenderClientId;
 
@@ -203,20 +244,21 @@ public class Whiteboard : NetworkBehaviour
             }
         };
 
-        RequestDataClientRpc(Data, clientRpcParams);
+        RequestData_ClientRpc(Data, clientRpcParams);
     }
 
     [ClientRpc]
-    private void RequestDataClientRpc(WhiteboardData data, ClientRpcParams clientRpcParams = default)
+    private void RequestData_ClientRpc(WhiteboardData data, ClientRpcParams clientRpcParams = default)
     {
         Logger.LogInfo("Recieved whiteboard data.", extended: true);
 
-        SetDataOnLocalClient(data);
+        SetData_Local(data);
     }
 
-    public void SetDataOnLocalClient(WhiteboardData data)
+    public void SetData_Local(WhiteboardData data)
     {
         Data = data;
+
         SaveData();
         UpdateWorldCanvas();
         LogDataExtended();
@@ -260,8 +302,8 @@ public class Whiteboard : NetworkBehaviour
         }
 
         _whiteboardText.text = displayText;
-        _whiteboardText.fontSize = _fontSizeArray[Data.FontSizeIndex];
-        _whiteboardText.fontStyle = _fontStyleArray[Data.FontStyleIndex];
+        _whiteboardText.fontSize = FontSizeArray[Data.FontSizeIndex];
+        _whiteboardText.fontStyle = FontStyleArray[Data.FontStyleIndex];
         _whiteboardText.font = _fontAssetArray[Data.FontFamilyIndex];
 
         _whiteboardText.horizontalAlignment = Data.HorizontalAlignmentIndex switch
@@ -284,6 +326,9 @@ public class Whiteboard : NetworkBehaviour
 
     private void LogDataExtended()
     {
+        if (!Logger.IsExtendedLoggingEnabled)
+            return;
+
         string message = string.Empty;
 
         message += $"DisplayText: \n\"{Data.DisplayText}\"\n\n";

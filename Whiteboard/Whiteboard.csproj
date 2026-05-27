@@ -48,9 +48,8 @@
   
   <ItemGroup>
     <None Include="..\README.md" Link="README.md" />
-    <None Include="Assets.cs" />
   </ItemGroup>
-
+  
   <!-- Dependencies -->
   <ItemGroup>
     <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" />
@@ -162,9 +161,9 @@
     <Game>lethal-company</Game>
     <ThunderstoreTeamName>Zehs</ThunderstoreTeamName>
     <AssetBundleFileName>whiteboard_assets</AssetBundleFileName>
-    <AssetBundleFolder>D:\LethalCompanyUnityProjects\LethalCompanyAssetBundles\AssetBundles</AssetBundleFolder>
+    <AssetBundleFolder>D:\LethalCompanyUnityProjects\LethalCompanyV81\Assets\LethalCompany\Mods\AssetBundles</AssetBundleFolder>
     
-    <GaleProfileName>Mod Development</GaleProfileName>
+    <GaleProfileName>Mod Development Mini</GaleProfileName>
     <GaleProfileName2>NONE</GaleProfileName2>
     
     <GaleDataFolder>$(AppData)\com.kesomannen.gale</GaleDataFolder>
@@ -181,7 +180,7 @@
     <PluginFolder>$(BepInExPluginsFolder)\$(ThunderstoreTeamName)-$(MSBuildProjectName)</PluginFolder>
     <PluginFolder2>$(BepInExPluginsFolder2)\$(ThunderstoreTeamName)-$(MSBuildProjectName)</PluginFolder2>
   </PropertyGroup>
-
+  
   <!-- NetcodePatch -->
   <Target Name="NetcodePatch" AfterTargets="PostBuildEvent">
     <Message Text="Running NetcodePatch v73+" Importance="high" />

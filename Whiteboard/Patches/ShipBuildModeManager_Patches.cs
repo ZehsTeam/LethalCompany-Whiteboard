@@ -4,7 +4,7 @@ using HarmonyLib;
 namespace com.github.zehsteam.Whiteboard.Patches;
 
 [HarmonyPatch(typeof(ShipBuildModeManager))]
-internal class ShipBuildModeManager_Patches
+internal static class ShipBuildModeManager_Patches
 {
     [HarmonyPatch(nameof(ShipBuildModeManager.PlayerMeetsConditionsToBuild))]
     [HarmonyPostfix]

@@ -8,7 +8,7 @@ namespace com.github.zehsteam.Whiteboard;
 
 internal static class Assets
 {
-    public static readonly string AssetBundleFileName = "Whiteboard_assets";
+    public static readonly string AssetBundleFileName = "whiteboard_assets";
     public static AssetBundle AssetBundle { get; private set; }
     public static bool IsLoaded { get; private set; }
 

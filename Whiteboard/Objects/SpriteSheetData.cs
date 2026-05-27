@@ -148,12 +148,12 @@ public class SpriteSheetData : ScriptableObject
 
     private static void LogInfo(object data)
     {
-        Debug.Log($"[SpriteSheetData] " + data);
+        Debug.Log($"[{nameof(SpriteSheetData)}] " + data);
     }
 
     private static void LogError(object data)
     {
-        Debug.LogError($"[SpriteSheetData] " + data);
+        Debug.LogError($"[{nameof(SpriteSheetData)}] " + data);
     }
     #endregion
 }

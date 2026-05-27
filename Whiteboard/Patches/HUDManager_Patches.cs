@@ -4,7 +4,7 @@ using HarmonyLib;
 namespace com.github.zehsteam.Whiteboard.Patches;
 
 [HarmonyPatch(typeof(HUDManager))]
-internal class HUDManager_Patches
+internal static class HUDManager_Patches
 {
     [HarmonyPatch(nameof(HUDManager.Start))]
     [HarmonyPostfix]

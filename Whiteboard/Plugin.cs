@@ -2,7 +2,6 @@
 using com.github.zehsteam.Whiteboard.Dependencies.LethalConfigMod;
 using com.github.zehsteam.Whiteboard.Helpers;
 using com.github.zehsteam.Whiteboard.Managers;
-using com.github.zehsteam.Whiteboard.MonoBehaviours;
 using com.github.zehsteam.Whiteboard.Patches;
 using HarmonyLib;
 
