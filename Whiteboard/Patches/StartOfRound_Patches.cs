@@ -49,12 +49,9 @@ internal static class StartOfRound_Patches
         if (WhiteboardEditor.Instance == null)
             return;
 
-        if (!WhiteboardEditor.Instance.IsWindowOpen)
-            return;
-
-        if (PlayerUtils.TryGetLocalPlayerScript(out PlayerControllerB playerScript))
+        if (WhiteboardEditor.Instance.IsWindowOpen)
         {
-            playerScript.disableMoveInput = true;
+            PlayerUtils.SetControlsEnabled(false);
         }
     }
 }

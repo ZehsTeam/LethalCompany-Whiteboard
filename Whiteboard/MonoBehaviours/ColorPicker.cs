@@ -10,7 +10,7 @@ public class ColorPicker : MonoBehaviour
     private GameObject _colorPickerWindowObject;
 
     [SerializeField]
-    private ColorPickerControl _colorPickerControlBehaviour;
+    private ColorPickerControl _colorPickerControl;
 
     public bool IsWindowOpen {  get; private set; }
 
@@ -37,7 +37,7 @@ public class ColorPicker : MonoBehaviour
 
         IsWindowOpen = true;
         _colorPickerWindowObject.SetActive(true);
-        _colorPickerControlBehaviour.SetColor(WhiteboardEditor.Instance.TextHexColor);
+        _colorPickerControl.SetColor(WhiteboardEditor.Instance.TextHexColor);
     }
 
     public void CloseWindow()
@@ -48,7 +48,7 @@ public class ColorPicker : MonoBehaviour
 
     public void OnConfirmButtonClicked()
     {
-        WhiteboardEditor.Instance.SetTextHexColor(_colorPickerControlBehaviour.GetHexColor());
+        WhiteboardEditor.Instance.SetTextHexColor(_colorPickerControl.GetHexColor());
 
         CloseWindow();
     }

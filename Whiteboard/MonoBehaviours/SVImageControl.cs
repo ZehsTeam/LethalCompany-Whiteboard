@@ -7,41 +7,42 @@ namespace com.github.zehsteam.Whiteboard.MonoBehaviours;
 public class SVImageControl : MonoBehaviour, IDragHandler, IPointerClickHandler
 {
     [SerializeField]
-    private ColorPickerControl _colorPickerControlBehaviour;
+    private ColorPickerControl _colorPickerControl;
 
     [SerializeField]
     private Image _pickerImage;
 
-    private RectTransform _rectTransform, _pickerTransform;
+    private RectTransform _rectTransform;
+    private RectTransform _pickerTransform;
 
     private void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
 
         _pickerTransform = _pickerImage.GetComponent<RectTransform>();
-        _pickerTransform.localPosition = new Vector2(-(_rectTransform.sizeDelta.x - 0.5f), -(_rectTransform.sizeDelta.y - 0.5f));
+        _pickerTransform.localPosition = new Vector2(-(_rectTransform.sizeDelta.x * 0.5f), -(_rectTransform.sizeDelta.y * 0.5f));
     }
 
     private void UpdateColor(PointerEventData eventData)
     {
-        Vector3 position = _rectTransform.InverseTransformPoint(eventData.position);
+        _rectTransform ??= GetComponent<RectTransform>();
+        _pickerTransform ??= _pickerImage.GetComponent<RectTransform>();
 
-        float deltaX = _rectTransform.sizeDelta.x - 0.5f;
-        float deltaY = _rectTransform.sizeDelta.y - 0.5f;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(_rectTransform, eventData.position, eventData.pressEventCamera, out Vector2 localPosition);
 
-        position.x = Mathf.Clamp(position.x, -deltaX, deltaX);
-        position.y = Mathf.Clamp(position.y, -deltaY, deltaY);
+        Vector2 clampedPosition = new Vector2(
+            Mathf.Clamp(localPosition.x, -_rectTransform.rect.width * 0.5f, _rectTransform.rect.width * 0.5f),
+            Mathf.Clamp(localPosition.y, -_rectTransform.rect.height * 0.5f, _rectTransform.rect.height * 0.5f)
+        );
 
-        float x = position.x + deltaX;
-        float y = position.y + deltaY;
+        float normalizedSaturation = (clampedPosition.x + (_rectTransform.rect.width * 0.5f)) / _rectTransform.rect.width;
+        float normalizedValue = (clampedPosition.y + (_rectTransform.rect.height * 0.5f)) / _rectTransform.rect.height;
 
-        float xNorm = x / _rectTransform.sizeDelta.x;
-        float yNorm = y / _rectTransform.sizeDelta.y;
+        _pickerTransform.localPosition = clampedPosition;
 
-        _pickerTransform.localPosition = position;
-        _pickerImage.color = Color.HSVToRGB(0, 0, 1 - yNorm);
+        _pickerImage.color = Color.HSVToRGB(0, 0, 1 - normalizedValue);
 
-        _colorPickerControlBehaviour.SetSatVal(xNorm, yNorm);
+        _colorPickerControl.SetSatVal(normalizedSaturation, normalizedValue);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -56,12 +57,15 @@ public class SVImageControl : MonoBehaviour, IDragHandler, IPointerClickHandler
 
     public void SetPickerLocation(float saturation, float value)
     {
-        float x = saturation - _rectTransform.sizeDelta.x - (_rectTransform.sizeDelta.x - 0.5f);
-        float y = value - _rectTransform.sizeDelta.y - (_rectTransform.sizeDelta.y - 0.5f);
+        _rectTransform ??= GetComponent<RectTransform>();
+        _pickerTransform ??= _pickerImage.GetComponent<RectTransform>();
+
+        float x = (saturation * _rectTransform.rect.width) - (_rectTransform.rect.width * 0.5f);
+        float y = (value * _rectTransform.rect.height) - (_rectTransform.rect.height * 0.5f);
 
         _pickerTransform.localPosition = new Vector2(x, y);
         _pickerImage.color = Color.HSVToRGB(0, 0, 1 - value);
 
-        Logger.LogInfo($"SetPickerLocation (saturation: {saturation}, value: {value}), (x: {x}, y: {y})", extended: true);
+        Logger.LogInfo($"[{nameof(SVImageControl)}] {nameof(SetPickerLocation)}: (saturation: {saturation}, value: {value}), (x: {x}, y: {y})", extended: true);
     }
 }

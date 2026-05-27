@@ -25,13 +25,13 @@ public class ColorPickerControl : MonoBehaviour
     private RawImage _outputImage;
 
     [SerializeField]
-    private Slider _hueSlider = null;
+    private Slider _hueSlider;
 
     [SerializeField]
-    private TMP_InputField _hexColorInputField = null;
+    private TMP_InputField _hexColorInputField;
 
     [SerializeField]
-    private SVImageControl _svImageControlBehaviour;
+    private SVImageControl _SVImageControl;
 
     private Texture2D _hueTexture;
     private Texture2D _satValTexture;
@@ -186,7 +186,7 @@ public class ColorPickerControl : MonoBehaviour
 
             UpdateOutputImage();
 
-            _svImageControlBehaviour.SetPickerLocation(_currentSat, _currentVal);
+            _SVImageControl.SetPickerLocation(_currentSat, _currentVal);
         }
     }
 

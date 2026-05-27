@@ -134,10 +134,15 @@ public class WhiteboardEditor : MonoBehaviour
         }
 
         IsWindowOpen = true;
+
         _editorWindowObject.SetActive(true);
+
         SetUIFromData(Whiteboard.Instance.Data);
+
         PlayerUtils.SetCursorLockState(false);
         PlayerUtils.SetControlsEnabled(false);
+
+        _displayTextInputField.ActivateInputField();
     }
 
     public void CloseWindow()

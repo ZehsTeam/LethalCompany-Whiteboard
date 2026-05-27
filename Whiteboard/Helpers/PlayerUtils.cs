@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
 namespace com.github.zehsteam.Whiteboard.Helpers;
@@ -145,105 +144,14 @@ internal static class PlayerUtils
 
     public static void SetControlsEnabled(bool value)
     {
-        if (value)
-        {
-            EnableControls();
-        }
-        else
-        {
-            DisableControls();
-        }
-    }
-
-    private static void EnableControls()
-    {
         if (!TryGetLocalPlayerScript(out PlayerControllerB playerScript))
             return;
 
-        playerScript.disableMoveInput = false;
+        bool disableControls = !value;
 
-        InputActionAsset actions = IngamePlayerSettings.Instance.playerInput.actions;
+        playerScript.disableLookInput = disableControls;
+        playerScript.disableMoveInput = disableControls;
 
-        try
-        {
-            // PlayerControllerB
-            playerScript.playerActions.Movement.Look.performed += playerScript.Look_performed;
-            actions.FindAction("Jump").performed += playerScript.Jump_performed;
-            actions.FindAction("Crouch").performed += playerScript.Crouch_performed;
-            actions.FindAction("Interact").performed += playerScript.Interact_performed;
-            actions.FindAction("ItemSecondaryUse").performed += playerScript.ItemSecondaryUse_performed;
-            actions.FindAction("ItemTertiaryUse").performed += playerScript.ItemTertiaryUse_performed;
-            actions.FindAction("ActivateItem").performed += playerScript.ActivateItem_performed;
-            actions.FindAction("ActivateItem").canceled += playerScript.ActivateItem_canceled;
-            actions.FindAction("Discard").performed += playerScript.Discard_performed;
-            actions.FindAction("SwitchItem").performed += playerScript.ScrollMouse_performed;
-            //actions.FindAction("OpenMenu").performed += playerScript.OpenMenu_performed;
-            actions.FindAction("InspectItem").performed += playerScript.InspectItem_performed;
-            actions.FindAction("SpeedCheat").performed += playerScript.SpeedCheat_performed;
-            actions.FindAction("Emote1").performed += playerScript.Emote1_performed;
-            actions.FindAction("Emote2").performed += playerScript.Emote2_performed;
-
-            playerScript.isTypingChat = false;
-
-            // HUDManager
-            actions.FindAction("EnableChat").performed += HUDManager.Instance.EnableChat_performed;
-            //actions.FindAction("OpenMenu").performed += HUDManager.Instance.OpenMenu_performed;
-            actions.FindAction("SubmitChat").performed += HUDManager.Instance.SubmitChat_performed;
-            actions.FindAction("PingScan").performed += HUDManager.Instance.PingScan_performed;
-
-            playerScript.playerActions.Movement.Enable();
-        }
-        catch (Exception e)
-        {
-            Logger.LogError($"Error while subscribing to input in PlayerController\n\n{e}");
-        }
-
-        playerScript.playerActions.Movement.Enable();
-    }
-
-    private static void DisableControls()
-    {
-        if (!TryGetLocalPlayerScript(out PlayerControllerB playerScript))
-            return;
-
-        playerScript.disableMoveInput = true;
-
-        InputActionAsset actions = IngamePlayerSettings.Instance.playerInput.actions;
-
-        try
-        {
-            // PlayerControllerB
-            playerScript.playerActions.Movement.Look.performed -= playerScript.Look_performed;
-            actions.FindAction("Jump").performed -= playerScript.Jump_performed;
-            actions.FindAction("Crouch").performed -= playerScript.Crouch_performed;
-            actions.FindAction("Interact").performed -= playerScript.Interact_performed;
-            actions.FindAction("ItemSecondaryUse").performed -= playerScript.ItemSecondaryUse_performed;
-            actions.FindAction("ItemTertiaryUse").performed -= playerScript.ItemTertiaryUse_performed;
-            actions.FindAction("ActivateItem").performed -= playerScript.ActivateItem_performed;
-            actions.FindAction("ActivateItem").canceled -= playerScript.ActivateItem_canceled;
-            actions.FindAction("Discard").performed -= playerScript.Discard_performed;
-            actions.FindAction("SwitchItem").performed -= playerScript.ScrollMouse_performed;
-            //actions.FindAction("OpenMenu").performed -= playerScript.OpenMenu_performed;
-            actions.FindAction("InspectItem").performed -= playerScript.InspectItem_performed;
-            actions.FindAction("SpeedCheat").performed -= playerScript.SpeedCheat_performed;
-            actions.FindAction("Emote1").performed -= playerScript.Emote1_performed;
-            actions.FindAction("Emote2").performed -= playerScript.Emote2_performed;
-
-            playerScript.isTypingChat = true;
-
-            // HUDManager
-            actions.FindAction("EnableChat").performed -= HUDManager.Instance.EnableChat_performed;
-            //actions.FindAction("OpenMenu").performed -= HUDManager.Instance.OpenMenu_performed;
-            actions.FindAction("SubmitChat").performed -= HUDManager.Instance.SubmitChat_performed;
-            actions.FindAction("PingScan").performed -= HUDManager.Instance.PingScan_performed;
-
-            playerScript.playerActions.Movement.Disable();
-        }
-        catch (Exception e)
-        {
-            Logger.LogError($"Error while unsubscribing to input in PlayerController\n\n{e}");
-        }
-
-        playerScript.playerActions.Movement.Disable();
+        playerScript.isTypingChat = disableControls;
     }
 }
