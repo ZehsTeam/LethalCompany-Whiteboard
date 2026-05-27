@@ -5,7 +5,7 @@ schemaVersion = "0.0.1"
 namespace = "Zehs"
 name = "Whiteboard"
 description = "[v81] Adds a new whiteboard store item that you can write on!"
-websiteUrl = "https://solo.to/crithaxxog"
+websiteUrl = "https://github.com/ZehsTeam/LethalCompany-Whiteboard"
 containsNsfwContent = false
 
 [package.dependencies]

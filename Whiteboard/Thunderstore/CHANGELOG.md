@@ -1,4 +1,8 @@
-# v1.3.0
+# v1.3.1
+
+- Updated README and manifest.
+
+## v1.3.0
 
 - Updated for Lethal Company v81
 - Fixed not being able to crouch.
